@@ -1,9 +1,9 @@
+use crate::mcp::JSONRPC_VERSION;
 use rpc_router::RpcParams;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 use url::Url;
-use crate::mcp::JSONRPC_VERSION;
 
 #[derive(Debug, Deserialize, Serialize, RpcParams, Clone)]
 pub struct InitializeRequest {
@@ -132,6 +132,21 @@ pub struct ResourceContent {
     pub blob: Option<String>, // For binary resources (base64 encoded)
 }
 
+// Resource templates (compat endpoints)
+#[derive(Debug, Deserialize, Serialize, RpcParams)]
+pub struct ListResourceTemplatesRequest {
+    pub cursor: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListResourceTemplatesResult {
+    #[serde(rename = "resourceTemplates")]
+    pub resource_templates: Vec<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_cursor: Option<String>,
+}
+
 // --------- prompt -------
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Prompt {
@@ -200,17 +215,26 @@ pub struct Tool {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     pub input_schema: ToolInputSchema,
+    // Compatibility: some clients expect `parameters` instead of `inputSchema`.
+    // We serialize both to satisfy validators that look for either key.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parameters: Option<ToolInputSchema>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct ToolInputSchema {
     #[serde(rename = "type")]
     pub type_name: String,
     pub properties: HashMap<String, ToolInputSchemaProperty>,
     pub required: Vec<String>,
+    #[serde(
+        rename = "additionalProperties",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub additional_properties: Option<bool>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 pub struct ToolInputSchemaProperty {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "type")]
@@ -220,6 +244,12 @@ pub struct ToolInputSchemaProperty {
     pub enum_values: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    // For array types, specify the item schema (e.g. { "type": "string" })
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Option<Box<ToolInputSchemaProperty>>,
+    // Optional JSON Schema keywords for arrays
+    #[serde(rename = "minItems", skip_serializing_if = "Option::is_none")]
+    pub min_items: Option<u64>,
 }
 
 #[derive(Deserialize, Serialize, RpcParams)]
@@ -325,6 +355,7 @@ pub struct Root {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum ErrorCode {
     // MCP SDK error codes
     ConnectionClosed = -1,

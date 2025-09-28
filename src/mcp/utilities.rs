@@ -1,7 +1,7 @@
 use crate::mcp::types::*;
 use crate::mcp::{PROTOCOL_VERSION, SERVER_NAME, SERVER_VERSION};
 use rpc_router::HandlerResult;
-use serde_json::{json, Value};
+use serde_json::json;
 
 /// handler for `initialize` request from client
 pub async fn initialize(_request: InitializeRequest) -> HandlerResult<InitializeResult> {
@@ -13,7 +13,7 @@ pub async fn initialize(_request: InitializeRequest) -> HandlerResult<Initialize
         },
         capabilities: ServerCapabilities {
             experimental: None,
-            prompts: Some(PromptCapabilities::default()),
+            prompts: None,
             resources: None,
             tools: Some(json!({})),
             roots: None,
@@ -42,26 +42,21 @@ pub async fn ping(_request: PingRequest) -> HandlerResult<EmptyResult> {
     Ok(EmptyResult {})
 }
 
-pub async fn logging_set_level(_request: SetLevelRequest) -> HandlerResult<LoggingResponse> {
-    Ok(LoggingResponse {})
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-pub async fn roots_list(_request: Option<ListRootsRequest>) -> HandlerResult<ListRootsResult> {
-    let response = ListRootsResult {
-        roots: vec![Root {
-            name: "my project".to_string(),
-            url: "file:///home/user/projects/my-project".to_string(),
-        }],
-    };
-    Ok(response)
-}
-
-/// send notification to client
-pub fn notify(method: &str, params: Option<Value>) {
-    let notification = json!({
-        "jsonrpc": "2.0",
-        "method": method,
-        "params": params,
-    });
-    println!("{}", serde_json::to_string(&notification).unwrap());
+    #[tokio::test]
+    async fn test_initialize() {
+        let req = InitializeRequest {
+            protocol_version: "1.0".into(),
+            capabilities: ClientCapabilities::default(),
+            client_info: Implementation {
+                name: "test".into(),
+                version: "0".into(),
+            },
+        };
+        let res = super::initialize(req).await.unwrap();
+        assert_eq!(res.server_info.name, crate::mcp::SERVER_NAME);
+    }
 }

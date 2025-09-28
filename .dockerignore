@@ -1,0 +1,16 @@
+# Docker build context pruning
+/target
+/.git
+/.github
+/.idea
+**/*.log
+/tmp
+
+# Node/npm leftovers (just in case)
+node_modules
+npm-debug.log*
+
+# Cargo artifacts
+**/*.rlib
+**/*.rmeta
+

@@ -34,22 +34,44 @@ pub async fn prompts_list(
 
 pub async fn prompts_get(request: GetPromptRequest) -> HandlerResult<PromptResult> {
     let response = match request.name.as_str() {
-        "current_time" => PromptResult {
-            description: "Get the current time in city".to_string(),
-            messages: Some(vec![PromptMessage {
-                role: "user".to_string(),
-                content: PromptMessageContent {
-                    type_name: "text".to_string(),
-                    text: format!(
-                        "What's the time of {}?",
-                        request.arguments.unwrap()["city"].as_str().unwrap()
-                    ),
-                },
-            }]),
-        },
+        "current_time" => {
+            let city = request
+                .arguments
+                .as_ref()
+                .and_then(|m| m.get("city"))
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| json!({"code": -32602, "message": "Missing required argument: city"}).into_handler_error())?;
+
+            PromptResult {
+                description: "Get the current time in city".to_string(),
+                messages: Some(vec![PromptMessage {
+                    role: "user".to_string(),
+                    content: PromptMessageContent {
+                        type_name: "text".to_string(),
+                        text: format!("What's the time of {}?", city),
+                    },
+                }]),
+            }
+        }
         _ => {
             return Err(json!({"code": -32602, "message": "Prompt not found"}).into_handler_error())
         }
     };
     Ok(response)
+}
+
+#[cfg(test)]
+mod tests {
+    #[tokio::test]
+    async fn test_prompts_list() {
+        let res = super::prompts_list(None).await.unwrap();
+        assert!(!res.prompts.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_prompts_get_missing_arg() {
+        let req = GetPromptRequest { name: "current_time".into(), arguments: None };
+        let err = super::prompts_get(req).await.err();
+        assert!(err.is_some());
+    }
 }

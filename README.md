@@ -1,59 +1,267 @@
-MCP Rust CLI server template
-=============================
+Prometheus MCP Server
+=====================
 
-Model Context Protocol (MCP) is an open protocol that enables seamless integration between LLM applications
-and external data sources and tools. Whether you’re building an AI-powered IDE, enhancing a chat interface,
-or creating custom AI workflows, MCP provides a standardized way to connect LLMs with the context they need.
+A minimal Model Context Protocol (MCP) server focused on reading from Prometheus. It exposes Prometheus discovery and query tools to MCP-compatible apps and includes a convenient CLI for local queries.
 
-mcp-rs-template is a simple application template that demonstrates how to implement MCP CLI server in Rust.
+Highlights
 
-# How to use template?
+- Instant and range queries via Prometheus HTTP API
+- Discovery helpers: list metrics, get metadata, series selectors, label values
+- Optional internal metrics exporter at /metrics (disabled by default)
+- Works as a stdio MCP server or a one-off CLI
 
-1. Clone the repository
-2. Modify project information in `Cargo.toml` and `src/mcp/mod.rs`
-3. Modify server handlers:
-    - `src/mcp/prompts.rs`: prompts handlers
-    - `src/mcp/resources.rs`: resources handlers
-    - `src/mcp/tools.rs`: tools handlers
-4. Modify `src/mcp/templates/*.json` if you prefer to use json files for prompts, resources, and tools
+Installation
+-----------
 
-mcp-rs-template is based on [rust-rpc-router](https://github.com/jeremychone/rust-rpc-router), a JSON-RPC routing
-library for Rust.
+Build from source (Rust):
 
-# CLI options
+```bash
+cargo build --release
+# binary at ./target/release/prometheus-mcp
+```
 
-* `--mcp`: Enable MCP server
-* `--resources`: display resources
-* `--prompts`: display prompts
-* `--tools`: display tools
+Or build a Docker image:
 
-# How to use MCP CLI server in Claude Desktop?
+```bash
+docker build -t prometheus-mcp:latest .
+```
 
-1. Edit `claude_desktop_config.json`: Claude Desktop -> `Settings` -> `Developer` -> `Edit Config` 
-2. Add the following configuration to the `servers` section:
+Usage (CLI)
+-----------
+
+The CLI mirrors the tools exposed over MCP.
+
+- Instant query
+
+```bash
+prometheus-mcp query --query 'up' --prometheus-url http://localhost:9090
+# optionally set an evaluation time
+prometheus-mcp query --query 'up' --time '2025-09-27T12:00:00Z'
+```
+
+- Range query
+
+```bash
+prometheus-mcp range --query 'rate(http_requests_total[5m])' \
+  --start '2025-09-27T12:00:00Z' --end '2025-09-27T13:00:00Z' --step '30s'
+```
+
+- List metric names
+
+```bash
+prometheus-mcp list-metrics
+```
+
+- Metric metadata
+
+```bash
+prometheus-mcp metadata --metric 'up'
+```
+
+- Series selectors (repeat --selector)
+
+```bash
+prometheus-mcp series --selector 'up' --selector 'node_cpu_seconds_total{mode="idle"}'
+```
+
+- Label values
+
+```bash
+prometheus-mcp label-values --label 'job'
+```
+
+MCP server (stdio)
+------------------
+
+Start the MCP server over stdio:
+
+```bash
+prometheus-mcp --mcp --prometheus-url http://localhost:9090
+```
+
+Optional: enable internal metrics at /metrics (default off):
+
+```bash
+prometheus-mcp --mcp --metrics-exporter --metrics-port 9091
+```
+
+Running in Docker
+-----------------
+
+Build the image:
+
+```bash
+docker build -t prometheus-mcp:latest .
+```
+
+Run the MCP server:
+
+```bash
+# Linux: easiest if Prometheus is on the host at :9090
+docker run --rm -it --network host prometheus-mcp:latest --mcp \
+  --prometheus-url http://localhost:9090
+
+# macOS/Windows: use host.docker.internal
+docker run --rm -it prometheus-mcp:latest --mcp \
+  --prometheus-url http://host.docker.internal:9090
+
+# Linux without host network: map host gateway
+docker run --rm -it --add-host=host.docker.internal:host-gateway \
+  prometheus-mcp:latest --mcp \
+  --prometheus-url http://host.docker.internal:9090
+```
+
+One-off CLI in the container:
+
+```bash
+# Instant query
+docker run --rm prometheus-mcp:latest query --query 'up' \
+  --prometheus-url http://host.docker.internal:9090
+
+# Range query
+docker run --rm prometheus-mcp:latest range --query 'rate(http_requests_total[5m])' \
+  --start '2025-09-27T12:00:00Z' --end '2025-09-27T13:00:00Z' --step '30s' \
+  --prometheus-url http://host.docker.internal:9090
+```
+
+Basic Auth
+----------
+
+Pass credentials via environment variables or CLI flags.
+
+- Environment variables:
+
+```bash
+export PROMETHEUS_URL=https://prom.example.com
+export PROMETHEUS_USERNAME=api
+export PROMETHEUS_PASSWORD=secret
+prometheus-mcp --mcp
+```
+
+- CLI flags:
+
+```bash
+prometheus-mcp --mcp \
+  --prometheus-url https://prom.example.com \
+  --prometheus-username api \
+  --prometheus-password secret
+```
+
+- Docker with env vars:
+
+```bash
+docker run --rm -it \
+  -e PROMETHEUS_URL=https://prom.example.com \
+  -e PROMETHEUS_USERNAME=api \
+  -e PROMETHEUS_PASSWORD=secret \
+  prometheus-mcp:latest --mcp
+```
+
+Configuration
+-------------
+
+All settings can be provided via environment variables; some also via flags.
+
+| Name | Type | Default | CLI flag | Description |
+|------|------|---------|----------|-------------|
+| PROMETHEUS_URL | string (URL) | http://localhost:9090 | --prometheus-url | Base URL of your Prometheus server |
+| PROMETHEUS_TIMEOUT | integer (seconds) | 10 | — | HTTP request timeout |
+| PROMETHEUS_RETRIES | integer | 3 | — | Number of retries for Prometheus API calls |
+| PROMETHEUS_RETRY_BACKOFF_MS | integer (ms) | 500 | — | Time to wait between retries |
+| PROMETHEUS_MIN_INTERVAL_MS | integer (ms) | — | — | Minimum interval between query requests (basic rate limit) |
+| PROMETHEUS_CACHE_TTL_SECS | integer (seconds) | — | — | TTL for simple in-process caches (list metrics and label values) |
+| PROMETHEUS_USERNAME | string | — | --prometheus-username | Basic auth username |
+| PROMETHEUS_PASSWORD | string | — | --prometheus-password | Basic auth password |
+| — | boolean | false | --mcp | Start MCP server over stdio |
+| — | boolean | false | --metrics-exporter | Enable internal Prometheus metrics at /metrics |
+| — | integer (port) | 9091 | --metrics-port | Port for /metrics when exporter is enabled |
+
+See docs/configuration.md for notes and examples.
+
+Accessing from Claude Desktop
+-----------------------------
+
+Follow the official guide to locate `claude_desktop_config.json`:
+https://modelcontextprotocol.io/quickstart/user#for-claude-desktop-users
+
+Minimal Docker-based entry:
 
 ```json
 {
-   "mcpServers": {
-      "current-time": {
-         "command": "mcp-rs-template",
-         "args": [
-            "--mcp"
-         ],
-         "env": {
-            "API_KEY": "xxxx"
-         }
-      }
-   }
+  "mcpServers": {
+    "prometheus": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "prometheus-mcp:latest"]
+    }
+  }
 }
 ```
 
-If you want to check MCP log, please use `tail -n 20 -f ~/Library/Logs/Claude/mcp*.log`.
+With host Prometheus and exporter (macOS/Windows):
 
+```json
+{
+  "mcpServers": {
+    "prometheus": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-p", "9091:9091",
+        "prometheus-mcp:latest",
+        "--mcp",
+        "--prometheus-url", "http://host.docker.internal:9090",
+        "--metrics-exporter",
+        "--metrics-port", "9091"
+      ]
+    }
+  }
+}
+```
 
-# References
+With Basic Auth via environment variables:
 
-* MCP Specification: https://spec.modelcontextprotocol.io/
-* Model Context Protocol (MCP): https://modelcontextprotocol.io/introduction
-* rpc-router: json-rpc routing library - https://github.com/jeremychone/rust-rpc-router/
-* Zed context_server: https://github.com/zed-industries/zed/tree/main/crates/context_server
+```json
+{
+  "mcpServers": {
+    "prometheus": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-e", "PROMETHEUS_URL=https://prom.example.com",
+        "-e", "PROMETHEUS_USERNAME=api",
+        "-e", "PROMETHEUS_PASSWORD=secret",
+        "prometheus-mcp:latest", "--mcp"
+      ]
+    }
+  }
+}
+```
+
+More examples: see docs/claude-desktop.md.
+
+Debugging
+---------
+
+Use the MCP Inspector to exercise the server interactively:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Connect with transport "STDIO", command `prometheus-mcp`, and optional args `--mcp --prometheus-url http://localhost:9090`.
+
+Logs are appended to /tmp/mcp.jsonl; tail it with:
+
+```bash
+tail -f /tmp/mcp.jsonl
+```
+
+Security Considerations
+-----------------------
+
+- The server does not provide authentication itself; when running outside stdio, keep it on localhost.
+- Handle credentials via environment variables or your secret manager. Avoid committing secrets.
+
+License
+-------
+Apache-2.0
