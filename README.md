@@ -1,6 +1,13 @@
 Prometheus MCP Server
 =====================
 
+[![Crates.io](https://img.shields.io/crates/v/prometheus-mcp.svg?style=for-the-badge)](https://crates.io/crates/prometheus-mcp)
+[![Docs.rs](https://img.shields.io/docsrs/prometheus-mcp?style=for-the-badge)](https://docs.rs/prometheus-mcp)
+[![Release CI](https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/brenoepics/prometheus-mcp?style=for-the-badge)](https://github.com/brenoepics/prometheus-mcp/releases)
+[![Docker pulls](https://img.shields.io/docker/pulls/brenoepics/prometheus-mcp?style=for-the-badge)](https://hub.docker.com/r/brenoepics/prometheus-mcp)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=for-the-badge)](LICENSE)
+
 A minimal Model Context Protocol (MCP) server focused on reading from Prometheus. It exposes Prometheus discovery and query tools to MCP-compatible apps and includes a convenient CLI for local queries.
 
 Highlights
@@ -9,6 +16,42 @@ Highlights
 - Discovery helpers: list metrics, get metadata, series selectors, label values
 - Optional internal metrics exporter at /metrics (disabled by default)
 - Works as a stdio MCP server or a one-off CLI
+
+Container images
+----------------
+
+Images are published to both Docker Hub and GHCR:
+- Docker Hub: `brenoepics/prometheus-mcp`
+- GHCR: `ghcr.io/brenoepics/prometheus-mcp`
+
+Quickstart
+----------
+
+Pick your preferred install method.
+
+- From crates.io (installs the `prometheus-mcp` binary):
+
+```bash
+cargo install prometheus-mcp
+prometheus-mcp --help
+```
+
+- Prebuilt binaries (GitHub Releases):
+  - Download the latest release for your OS/arch:
+    https://github.com/brenoepics/prometheus-mcp/releases
+
+- Docker (pull from Docker Hub or GHCR):
+
+```bash
+# Docker Hub
+docker pull brenoepics/prometheus-mcp:latest
+# or GHCR
+docker pull ghcr.io/brenoepics/prometheus-mcp:latest
+
+# Run the MCP server against a local Prometheus (pick one image)
+docker run --rm -it brenoepics/prometheus-mcp:latest --mcp \
+  --prometheus-url http://host.docker.internal:9090
+```
 
 Installation
 -----------
@@ -20,7 +63,7 @@ cargo build --release
 # binary at ./target/release/prometheus-mcp
 ```
 
-Or build a Docker image:
+Or build a Docker image locally:
 
 ```bash
 docker build -t prometheus-mcp:latest .
@@ -88,26 +131,24 @@ prometheus-mcp --mcp --metrics-exporter --metrics-port 9091
 Running in Docker
 -----------------
 
-Build the image:
+Use the published image from Docker Hub (or GHCR alternative shown):
 
 ```bash
-docker build -t prometheus-mcp:latest .
+# Start the MCP server (macOS/Windows: host.docker.internal works; Linux see alternatives below)
+docker run --rm -it brenoepics/prometheus-mcp:latest --mcp \
+  --prometheus-url http://host.docker.internal:9090
 ```
 
-Run the MCP server:
+Linux alternatives when Prometheus runs on the host:
 
 ```bash
-# Linux: easiest if Prometheus is on the host at :9090
-docker run --rm -it --network host prometheus-mcp:latest --mcp \
+# Use host networking (Linux only)
+docker run --rm -it --network host brenoepics/prometheus-mcp:latest --mcp \
   --prometheus-url http://localhost:9090
 
-# macOS/Windows: use host.docker.internal
-docker run --rm -it prometheus-mcp:latest --mcp \
-  --prometheus-url http://host.docker.internal:9090
-
-# Linux without host network: map host gateway
+# Without host network: map host gateway and use host.docker.internal
 docker run --rm -it --add-host=host.docker.internal:host-gateway \
-  prometheus-mcp:latest --mcp \
+  brenoepics/prometheus-mcp:latest --mcp \
   --prometheus-url http://host.docker.internal:9090
 ```
 
@@ -115,13 +156,56 @@ One-off CLI in the container:
 
 ```bash
 # Instant query
-docker run --rm prometheus-mcp:latest query --query 'up' \
+docker run --rm brenoepics/prometheus-mcp:latest query --query 'up' \
   --prometheus-url http://host.docker.internal:9090
 
 # Range query
-docker run --rm prometheus-mcp:latest range --query 'rate(http_requests_total[5m])' \
+docker run --rm brenoepics/prometheus-mcp:latest range --query 'rate(http_requests_total[5m])' \
   --start '2025-09-27T12:00:00Z' --end '2025-09-27T13:00:00Z' --step '30s' \
   --prometheus-url http://host.docker.internal:9090
+```
+
+Publishing to Docker Hub and GHCR
+---------------------------------
+
+The image is `brenoepics/prometheus-mcp` on Docker Hub and `ghcr.io/brenoepics/prometheus-mcp` on GHCR. Replace `TAG` with a version like `v0.0.1` and optionally also tag `latest`.
+
+```bash
+# Docker Hub login (once per machine)
+docker login -u brenoepics
+
+# Build the local image and tag for both registries
+docker build -t brenoepics/prometheus-mcp:TAG .
+docker tag brenoepics/prometheus-mcp:TAG brenoepics/prometheus-mcp:latest
+
+docker tag brenoepics/prometheus-mcp:TAG ghcr.io/brenoepics/prometheus-mcp:TAG
+
+docker tag brenoepics/prometheus-mcp:latest ghcr.io/brenoepics/prometheus-mcp:latest
+
+# GHCR login (PAT or gh auth token)
+docker login ghcr.io -u USERNAME -p <GITHUB_TOKEN_OR_PAT>
+
+# Push to Docker Hub
+docker push brenoepics/prometheus-mcp:TAG
+docker push brenoepics/prometheus-mcp:latest
+
+# Push to GHCR
+docker push ghcr.io/brenoepics/prometheus-mcp:TAG
+docker push ghcr.io/brenoepics/prometheus-mcp:latest
+```
+
+Tip: for multi-arch (amd64+arm64) in one tag, use Buildx:
+
+```bash
+docker buildx create --use >/dev/null 2>&1 || true
+
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t brenoepics/prometheus-mcp:TAG \
+  -t brenoepics/prometheus-mcp:latest \
+  -t ghcr.io/brenoepics/prometheus-mcp:TAG \
+  -t ghcr.io/brenoepics/prometheus-mcp:latest \
+  --push .
 ```
 
 Basic Auth
@@ -154,7 +238,7 @@ docker run --rm -it \
   -e PROMETHEUS_URL=https://prom.example.com \
   -e PROMETHEUS_USERNAME=api \
   -e PROMETHEUS_PASSWORD=secret \
-  prometheus-mcp:latest --mcp
+  brenoepics/prometheus-mcp:latest --mcp
 ```
 
 Configuration
@@ -191,7 +275,7 @@ Minimal Docker-based entry:
   "mcpServers": {
     "prometheus": {
       "command": "docker",
-      "args": ["run", "--rm", "-i", "prometheus-mcp:latest"]
+      "args": ["run", "--rm", "-i", "brenoepics/prometheus-mcp:latest"]
     }
   }
 }
@@ -207,7 +291,7 @@ With host Prometheus and exporter (macOS/Windows):
       "args": [
         "run", "--rm", "-i",
         "-p", "9091:9091",
-        "prometheus-mcp:latest",
+        "brenoepics/prometheus-mcp:latest",
         "--mcp",
         "--prometheus-url", "http://host.docker.internal:9090",
         "--metrics-exporter",
@@ -230,7 +314,7 @@ With Basic Auth via environment variables:
         "-e", "PROMETHEUS_URL=https://prom.example.com",
         "-e", "PROMETHEUS_USERNAME=api",
         "-e", "PROMETHEUS_PASSWORD=secret",
-        "prometheus-mcp:latest", "--mcp"
+        "brenoepics/prometheus-mcp:latest", "--mcp"
       ]
     }
   }
