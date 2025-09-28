@@ -36,6 +36,6 @@ jobs:
           # If the musl build fails, keep this as false; otherwise you can try true.
           STATIC_LINKING: false
           # Optional: specify the toolchain (defaults to stable)
-          # TOOLCHAIN_VERSION: stable
+          TOOLCHAIN_VERSION: 1.83.0
           # Optional: pass extra cargo flags (e.g., features)
           # EXTRA_COMMAND_FLAGS: "--features=..."
