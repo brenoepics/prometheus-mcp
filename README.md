@@ -3,7 +3,7 @@ Prometheus MCP Server
 
 [![Crates.io](https://img.shields.io/crates/v/prometheus-mcp.svg?style=for-the-badge)](https://crates.io/crates/prometheus-mcp)
 [![Docs.rs](https://img.shields.io/docsrs/prometheus-mcp?style=for-the-badge)](https://docs.rs/prometheus-mcp)
-[![Build CI](https://github.com/brenoepics/prometheus-mcp/actions/workflows/rust.yml/badge.svg)](https://github.com/brenoepics/prometheus-mcp/actions/workflows/rust.yml)
+[![Release CI](https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml)
 [![GitHub release](https://img.shields.io/github/v/release/brenoepics/prometheus-mcp?style=for-the-badge)](https://github.com/brenoepics/prometheus-mcp/releases)
 [![Docker pulls](https://img.shields.io/docker/pulls/brenoepics/prometheus-mcp?style=for-the-badge)](https://hub.docker.com/r/brenoepics/prometheus-mcp)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=for-the-badge)](LICENSE)
@@ -16,6 +16,13 @@ Highlights
 - Discovery helpers: list metrics, get metadata, series selectors, label values
 - Optional internal metrics exporter at /metrics (disabled by default)
 - Works as a stdio MCP server or a one-off CLI
+
+Container images
+----------------
+
+Images are published to both Docker Hub and GHCR:
+- Docker Hub: `brenoepics/prometheus-mcp`
+- GHCR: `ghcr.io/brenoepics/prometheus-mcp`
 
 Quickstart
 ----------
@@ -33,12 +40,15 @@ prometheus-mcp --help
   - Download the latest release for your OS/arch:
     https://github.com/brenoepics/prometheus-mcp/releases
 
-- Docker (pull from Docker Hub):
+- Docker (pull from Docker Hub or GHCR):
 
 ```bash
-# latest or a specific tag
+# Docker Hub
 docker pull brenoepics/prometheus-mcp:latest
-# Run the MCP server against a local Prometheus
+# or GHCR
+docker pull ghcr.io/brenoepics/prometheus-mcp:latest
+
+# Run the MCP server against a local Prometheus (pick one image)
 docker run --rm -it brenoepics/prometheus-mcp:latest --mcp \
   --prometheus-url http://host.docker.internal:9090
 ```
@@ -121,7 +131,7 @@ prometheus-mcp --mcp --metrics-exporter --metrics-port 9091
 Running in Docker
 -----------------
 
-Use the published image from Docker Hub:
+Use the published image from Docker Hub (or GHCR alternative shown):
 
 ```bash
 # Start the MCP server (macOS/Windows: host.docker.internal works; Linux see alternatives below)
@@ -155,28 +165,48 @@ docker run --rm brenoepics/prometheus-mcp:latest range --query 'rate(http_reques
   --prometheus-url http://host.docker.internal:9090
 ```
 
-Publishing to Docker Hub
-------------------------
+Publishing to Docker Hub and GHCR
+---------------------------------
 
-The image name used on Docker Hub is `brenoepics/prometheus-mcp`. Replace `TAG` with a version like `v0.0.1` and optionally also tag `latest`.
+The image is `brenoepics/prometheus-mcp` on Docker Hub and `ghcr.io/brenoepics/prometheus-mcp` on GHCR. Replace `TAG` with a version like `v0.0.1` and optionally also tag `latest`.
 
 ```bash
-# 1) Log in (once per machine)
+# Docker Hub login (once per machine)
 docker login -u brenoepics
 
-# 2) Build the local image
+# Build the local image and tag for both registries
 docker build -t brenoepics/prometheus-mcp:TAG .
-
-# Optionally add the latest tag
 docker tag brenoepics/prometheus-mcp:TAG brenoepics/prometheus-mcp:latest
 
-# 3) Push to Docker Hub
+docker tag brenoepics/prometheus-mcp:TAG ghcr.io/brenoepics/prometheus-mcp:TAG
+
+docker tag brenoepics/prometheus-mcp:latest ghcr.io/brenoepics/prometheus-mcp:latest
+
+# GHCR login (PAT or gh auth token)
+docker login ghcr.io -u USERNAME -p <GITHUB_TOKEN_OR_PAT>
+
+# Push to Docker Hub
 docker push brenoepics/prometheus-mcp:TAG
-# Optionally push latest as well
 docker push brenoepics/prometheus-mcp:latest
+
+# Push to GHCR
+docker push ghcr.io/brenoepics/prometheus-mcp:TAG
+docker push ghcr.io/brenoepics/prometheus-mcp:latest
 ```
 
-Tip: keep tags aligned with Git tags/releases (e.g., `v0.0.1`).
+Tip: for multi-arch (amd64+arm64) in one tag, use Buildx:
+
+```bash
+docker buildx create --use >/dev/null 2>&1 || true
+
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t brenoepics/prometheus-mcp:TAG \
+  -t brenoepics/prometheus-mcp:latest \
+  -t ghcr.io/brenoepics/prometheus-mcp:TAG \
+  -t ghcr.io/brenoepics/prometheus-mcp:latest \
+  --push .
+```
 
 Basic Auth
 ----------
