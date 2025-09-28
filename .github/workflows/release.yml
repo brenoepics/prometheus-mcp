@@ -7,35 +7,66 @@ on:
 jobs:
   release:
     name: release ${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - target: x86_64-unknown-linux-musl
+          # Linux (static musl)
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
             archive: tar.gz tar.xz tar.zst
-            rustflags: ""
-          - target: x86_64-apple-darwin
+          # Windows (GNU)
+          - os: ubuntu-latest
+            target: x86_64-pc-windows-gnu
             archive: zip
-            # Lower macOS min version to match osxcross SDK (darwin14 -> 10.10)
-            rustflags: "-C link-arg=-mmacosx-version-min=10.10"
-            macosx_deployment_target: "10.10"
-          - target: x86_64-pc-windows-gnu
+          # macOS (Intel) — build natively to avoid osxcross
+          - os: macos-13
+            target: x86_64-apple-darwin
             archive: zip
-            rustflags: ""
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compile and upload to Release
+      # Linux/Windows: use rust-build.action to compile and upload
+      - name: Compile and upload (Linux/Windows)
+        if: matrix.os == 'ubuntu-latest'
         uses: rust-build/rust-build.action@v1.4.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Apply only for macOS target; empty for others
-          RUSTFLAGS: ${{ matrix.rustflags }}
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
         with:
           RUSTTARGET: ${{ matrix.target }}
           ARCHIVE_TYPES: ${{ matrix.archive }}
           EXTRA_FILES: "README.md LICENSE"
           STATIC_LINKING: false
           TOOLCHAIN_VERSION: 1.83.0
+
+      # macOS: native build and upload
+      - name: Set up Rust 1.83.0 (macOS)
+        if: matrix.os == 'macos-13'
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.83.0
+
+      - name: Build (macOS)
+        if: matrix.os == 'macos-13'
+        run: |
+          cargo build --release
+
+      - name: Package artifact (macOS)
+        if: matrix.os == 'macos-13'
+        run: |
+          mkdir -p dist
+          cp target/release/prometheus-mcp dist/
+          cp README.md LICENSE dist/
+          cd dist
+          zip -9r ../prometheus-mcp-${{ matrix.target }}.zip .
+          cd ..
+
+      - name: Upload to GitHub Release (macOS)
+        if: matrix.os == 'macos-13'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            prometheus-mcp-${{ matrix.target }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
