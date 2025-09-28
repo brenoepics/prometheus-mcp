@@ -12,15 +12,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Linux (static musl). OpenSSL often fails with static linking; we disable it.
           - target: x86_64-unknown-linux-musl
             archive: tar.gz tar.xz tar.zst
-          # macOS (Intel)
+            rustflags: ""
           - target: x86_64-apple-darwin
             archive: zip
-          # Windows (GNU toolchain)
+            # Lower macOS min version to match osxcross SDK (darwin14 -> 10.10)
+            rustflags: "-C link-arg=-mmacosx-version-min=10.10"
+            macosx_deployment_target: "10.10"
           - target: x86_64-pc-windows-gnu
             archive: zip
+            rustflags: ""
     steps:
       - uses: actions/checkout@v4
 
@@ -28,14 +30,12 @@ jobs:
         uses: rust-build/rust-build.action@v1.4.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Apply only for macOS target; empty for others
+          RUSTFLAGS: ${{ matrix.rustflags }}
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
         with:
           RUSTTARGET: ${{ matrix.target }}
           ARCHIVE_TYPES: ${{ matrix.archive }}
           EXTRA_FILES: "README.md LICENSE"
-          # Some crates using OpenSSL don't statically link well with musl
-          # If the musl build fails, keep this as false; otherwise you can try true.
           STATIC_LINKING: false
-          # Optional: specify the toolchain (defaults to stable)
           TOOLCHAIN_VERSION: 1.83.0
-          # Optional: pass extra cargo flags (e.g., features)
-          # EXTRA_COMMAND_FLAGS: "--features=..."

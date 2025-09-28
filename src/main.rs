@@ -14,12 +14,9 @@ use prometheus_mcp::mcp::types::{
 use prometheus_mcp::mcp::utilities::*;
 use rpc_router::{Error, Handler, Request, Router, RouterBuilder};
 use serde_json::{json, Value};
-use signal_hook::consts::SIGTERM;
-use signal_hook::{consts::SIGINT, iterator::Signals};
 use std::fs::OpenOptions;
 use std::io;
 use std::io::Write;
-use std::thread;
 use prometheus_mcp::mcp::prometheus_config::PrometheusConfig;
 use prometheus_mcp::mcp::repository::{set_repository, HttpPrometheusRepository};
 use std::sync::Arc;
@@ -154,26 +151,24 @@ async fn main() {
         (None, None)
     };
 
-    // Graceful shutdown on SIGINT/SIGTERM
-    let mut signals = match Signals::new([SIGTERM, SIGINT]) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("Failed to register signal handler: {}", e);
-            return;
-        }
-    };
-    let (tx, rx) = std::sync::mpsc::channel();
-
-    thread::spawn(move || {
-        if let Some(_sig) = signals.forever().next() {
+    // Cross-platform graceful shutdown
+    // On all platforms: handle Ctrl+C
+    tokio::spawn(async move {
+        if tokio::signal::ctrl_c().await.is_ok() {
             graceful_shutdown();
-            let _ = tx.send(());
             std::process::exit(0);
         }
     });
 
-    thread::spawn(move || {
-        let _ = rx.recv();
+    // On Unix additionally handle SIGTERM
+    #[cfg(unix)]
+    tokio::spawn(async move {
+        use tokio::signal::unix::{signal, SignalKind};
+        if let Ok(mut term) = signal(SignalKind::terminate()) {
+            term.recv().await;
+            graceful_shutdown();
+            std::process::exit(0);
+        }
     });
 
     // Process JSON-RPC from MCP client
