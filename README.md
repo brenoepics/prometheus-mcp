@@ -165,49 +165,6 @@ docker run --rm brenoepics/prometheus-mcp:latest range --query 'rate(http_reques
   --prometheus-url http://host.docker.internal:9090
 ```
 
-Publishing to Docker Hub and GHCR
----------------------------------
-
-The image is `brenoepics/prometheus-mcp` on Docker Hub and `ghcr.io/brenoepics/prometheus-mcp` on GHCR. Replace `TAG` with a version like `v0.0.1` and optionally also tag `latest`.
-
-```bash
-# Docker Hub login (once per machine)
-docker login -u brenoepics
-
-# Build the local image and tag for both registries
-docker build -t brenoepics/prometheus-mcp:TAG .
-docker tag brenoepics/prometheus-mcp:TAG brenoepics/prometheus-mcp:latest
-
-docker tag brenoepics/prometheus-mcp:TAG ghcr.io/brenoepics/prometheus-mcp:TAG
-
-docker tag brenoepics/prometheus-mcp:latest ghcr.io/brenoepics/prometheus-mcp:latest
-
-# GHCR login (PAT or gh auth token)
-docker login ghcr.io -u USERNAME -p <GITHUB_TOKEN_OR_PAT>
-
-# Push to Docker Hub
-docker push brenoepics/prometheus-mcp:TAG
-docker push brenoepics/prometheus-mcp:latest
-
-# Push to GHCR
-docker push ghcr.io/brenoepics/prometheus-mcp:TAG
-docker push ghcr.io/brenoepics/prometheus-mcp:latest
-```
-
-Tip: for multi-arch (amd64+arm64) in one tag, use Buildx:
-
-```bash
-docker buildx create --use >/dev/null 2>&1 || true
-
-docker buildx build \
-  --platform linux/amd64,linux/arm64 \
-  -t brenoepics/prometheus-mcp:TAG \
-  -t brenoepics/prometheus-mcp:latest \
-  -t ghcr.io/brenoepics/prometheus-mcp:TAG \
-  -t ghcr.io/brenoepics/prometheus-mcp:latest \
-  --push .
-```
-
 Basic Auth
 ----------
 
