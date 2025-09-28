@@ -1,13 +1,37 @@
 [package]
 name = "prometheus-mcp"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 authors = ["Breno A. <me@breno.tech>"]
 description = "Prometheus Model Context Protocol (MCP) Rust server"
-keywords = ["rust", "ai", "mcp", "prometheus", "monitoring"]
-categories = ["command-line-utilities", "development-tools"]
+keywords = ["prometheus", "mcp", "observability", "metrics"]
+categories = ["command-line-utilities", "api-bindings", "network-programming", "web-programming::http-client"]
 readme = "README.md"
 license = "Apache-2.0"
+repository = "https://github.com/brenoepics/prometheus-mcp"
+homepage = "https://github.com/brenoepics/prometheus-mcp"
+documentation = "https://docs.rs/prometheus-mcp"
+rust-version = "1.74"
+exclude = [
+    "target/**",
+    ".git/**",
+    ".github/**",
+    ".gitignore",
+    ".idea/**",
+    ".vscode/**",
+    "*.orig",
+    "**/*.orig",
+    "**/*.bak",
+    "**/*~",
+]
+
+[badges]
+docsrs = { }
+maintenance = { status = "actively-developed" }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 tokio = { version = "1.0", features = ["full"] }
