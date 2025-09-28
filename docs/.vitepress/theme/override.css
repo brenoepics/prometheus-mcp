@@ -1,0 +1,85 @@
+:root {
+  /* Prometheus brand colors */
+  --vp-c-brand-1: #E6522C; /* primary */
+  --vp-c-brand-2: #C83D1A; /* darker */
+  --vp-c-brand-3: #FF6A3E; /* lighter */
+  --vp-c-brand-soft: rgba(230, 82, 44, 0.12);
+
+  /* Custom block colors */
+  --vp-c-warning-1: #F6C445;
+  --vp-c-warning-soft: rgba(246, 196, 69, 0.14);
+  --vp-c-info-1: #4C8EDA;
+  --vp-c-info-soft: rgba(76, 142, 218, 0.14);
+  --vp-c-note-1: #7A7A7A;
+  --vp-c-note-soft: rgba(122, 122, 122, 0.10);
+}
+
+/************************
+ * Custom block styling  *
+ ************************/
+.vp-doc .custom-block.tip {
+  border-left: 4px solid var(--vp-c-brand-1);
+  background-color: var(--vp-c-brand-soft);
+}
+.vp-doc .custom-block.tip > .custom-block-title {
+  color: var(--vp-c-brand-2);
+}
+
+.vp-doc .custom-block.warning {
+  border-left: 4px solid var(--vp-c-warning-1);
+  background-color: var(--vp-c-warning-soft);
+}
+.vp-doc .custom-block.warning > .custom-block-title {
+  color: var(--vp-c-warning-1);
+}
+
+/* Map info to a clear blue so it’s not grey */
+.vp-doc .custom-block.info {
+  border-left: 4px solid var(--vp-c-info-1);
+  background-color: var(--vp-c-info-soft);
+}
+.vp-doc .custom-block.info > .custom-block-title {
+  color: var(--vp-c-info-1);
+}
+
+/* Note stays neutral but visible */
+.vp-doc .custom-block.note {
+  border-left: 4px solid var(--vp-c-note-1);
+  background-color: var(--vp-c-note-soft);
+}
+.vp-doc .custom-block.note > .custom-block-title {
+  color: var(--vp-c-note-1);
+}
+
+/****************
+ * Tables       *
+ ****************/
+.vp-doc table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+}
+.vp-doc thead th {
+  background: var(--vp-c-bg-alt);
+}
+.vp-doc th,
+.vp-doc td {
+  padding: 8px 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+.vp-doc tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--vp-c-bg) 92%, var(--vp-c-brand-1));
+}
+
+/****************
+ * Code blocks  *
+ ****************/
+.vp-doc .vp-code-group .tabs label:hover,
+.vp-doc .vp-code-group .tabs label.active {
+  color: var(--vp-c-brand-1);
+}
+.vp-doc .vp-code-group .blocks pre {
+  border-left: 3px solid var(--vp-c-brand-1);
+}

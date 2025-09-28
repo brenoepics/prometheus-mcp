@@ -2,8 +2,10 @@
 
 It’s recommended to use the Docker image when running the MCP server for Claude Desktop.
 
+::: tip Reference
 Follow the official instructions to locate/modify your Claude Desktop configuration:
 - https://modelcontextprotocol.io/quickstart/user#for-claude-desktop-users
+:::
 
 Edit your `claude_desktop_config.json` to add an entry like one of the following.
 
@@ -103,5 +105,6 @@ If you built or installed the binary locally:
 }
 ```
 
-Secrets note: Prefer using environment variables (or a host secret manager) over placing credentials directly in `claude_desktop_config.json`.
-
+::: warning Secrets
+Prefer environment variables (or a host secret manager) over placing credentials directly in `claude_desktop_config.json`.
+:::

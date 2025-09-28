@@ -10,6 +10,10 @@ docker build -t prometheus-mcp:latest .
 
 ## Run (MCP server)
 
+::: tip
+Use host networking on Linux for easiest connectivity to a host Prometheus on :9090.
+:::
+
 - Linux (Prometheus on host at :9090) — easiest with host networking:
 ```bash
 docker run --rm -it --network host prometheus-mcp:latest --mcp \
@@ -46,22 +50,25 @@ docker run --rm prometheus-mcp:latest range --query 'rate(http_requests_total[5m
 
 Supply credentials via environment variables or CLI flags.
 
-- Using environment variables:
-```bash
+::: code-group
+```bash [Env]
 docker run --rm -it \
   -e PROMETHEUS_URL=https://prom.example.com \
   -e PROMETHEUS_USERNAME=api \
   -e PROMETHEUS_PASSWORD=secret \
   prometheus-mcp:latest --mcp
 ```
-
-- Using flags:
-```bash
+```bash [Flags]
 docker run --rm -it prometheus-mcp:latest --mcp \
   --prometheus-url https://prom.example.com \
   --prometheus-username api \
   --prometheus-password secret
 ```
+:::
+
+::: warning Secrets
+Prefer Docker secrets or environment variables managed by your orchestrator. Avoid baking credentials into images or command history.
+:::
 
 ## Metrics exporter
 
@@ -72,4 +79,3 @@ docker run --rm -it -p 9091:9091 prometheus-mcp:latest --mcp \
   --metrics-exporter --metrics-port 9091 \
   --prometheus-url http://host.docker.internal:9090
 ```
-

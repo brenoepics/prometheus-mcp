@@ -130,3 +130,16 @@ Cargo.lock
 *.orig
 *.bak
 *~
+
+
+# Docs
+/docs/coverage
+/docs/node_modules
+/docsdist
+/docs/TODOs.md
+/docs/.DS_Store
+/docs/.vitepress/cache
+/docs/.vscode/
+/docs/.idea/
+/docs/.vitepress/dist/
+/docs/package-lock.json

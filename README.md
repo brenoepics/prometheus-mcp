@@ -1,12 +1,18 @@
-Prometheus MCP Server
-=====================
+<div align="center">
+  <h1>Prometheus MCP</h1>
+  <p><strong>Query Prometheus from the CLI or any MCP client</strong></p>
+  <p>Discovery helpers, retries, caching, and an optional metrics exporter.</p>
+  <p>
+    <a href="https://crates.io/crates/prometheus-mcp"><img src="https://img.shields.io/crates/v/prometheus-mcp.svg" alt="Crates.io"></a>
+    <a href="https://docs.rs/prometheus-mcp"><img src="https://img.shields.io/docsrs/prometheus-mcp" alt="Docs.rs"></a>
+    <a href="https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml"><img src="https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml/badge.svg" alt="Release CI"></a>
+    <a href="https://github.com/brenoepics/prometheus-mcp/releases"><img src="https://img.shields.io/github/v/release/brenoepics/prometheus-mcp" alt="GitHub release"></a>
+    <a href="https://hub.docker.com/r/brenoepics/prometheus-mcp"><img src="https://img.shields.io/docker/pulls/brenoepics/prometheus-mcp" alt="Docker pulls"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
+  </p>
+</div>
 
-[![Crates.io](https://img.shields.io/crates/v/prometheus-mcp.svg?style=for-the-badge)](https://crates.io/crates/prometheus-mcp)
-[![Docs.rs](https://img.shields.io/docsrs/prometheus-mcp?style=for-the-badge)](https://docs.rs/prometheus-mcp)
-[![Release CI](https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml/badge.svg)](https://github.com/brenoepics/prometheus-mcp/actions/workflows/release.yml)
-[![GitHub release](https://img.shields.io/github/v/release/brenoepics/prometheus-mcp?style=for-the-badge)](https://github.com/brenoepics/prometheus-mcp/releases)
-[![Docker pulls](https://img.shields.io/docker/pulls/brenoepics/prometheus-mcp?style=for-the-badge)](https://hub.docker.com/r/brenoepics/prometheus-mcp)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=for-the-badge)](LICENSE)
+---
 
 A minimal Model Context Protocol (MCP) server focused on reading from Prometheus. It exposes Prometheus discovery and query tools to MCP-compatible apps and includes a convenient CLI for local queries.
 
