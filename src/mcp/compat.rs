@@ -1,5 +1,4 @@
 use crate::mcp::types::*;
-// filepath: /home/brenoepic/RustroverProjects/prometheus-mcp/src/mcp/compat.rs
 use rpc_router::HandlerResult;
 
 /// No-op handler for `resources/list` to satisfy clients that probe this method.
