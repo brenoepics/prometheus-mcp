@@ -10,7 +10,7 @@ readme = "README.md"
 license = "Apache-2.0"
 repository = "https://github.com/brenoepics/prometheus-mcp"
 homepage = "https://github.com/brenoepics/prometheus-mcp"
-documentation = "https://docs.rs/prometheus-mcp"
+documentation = "https://brenoepics.github.io/prometheus-mcp/"
 rust-version = "1.82"
 include = [
   "Cargo.toml",
