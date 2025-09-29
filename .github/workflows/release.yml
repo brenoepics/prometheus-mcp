@@ -25,12 +25,12 @@ jobs:
             target: x86_64-apple-darwin
             archive: zip
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       # Linux/Windows: use rust-build.action to compile and upload
       - name: Compile and upload (Linux/Windows)
         if: matrix.os == 'ubuntu-latest'
-        uses: rust-build/rust-build.action@v1.4.5
+        uses: rust-build/rust-build.action@6febf1b0ed6499a46610b58ef9d810398e75f3c2 # v1.4.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -64,7 +64,7 @@ jobs:
 
       - name: Upload to GitHub Release (macOS)
         if: matrix.os == 'macos-13'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2.3.3
         with:
           files: |
             prometheus-mcp-${{ matrix.target }}.zip
