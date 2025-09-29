@@ -4,14 +4,16 @@ layout: home
 
 hero:
   name: "prometheus-mcp"
-  text: "Prometheus MCP server + CLI tools"
+  text: "MCP server + CLI tools"
   tagline: Query Prometheus from CLI or any MCP client, with retries, caching, and an optional metrics exporter.
-  icon: 🛠️
-  image:
-    src: /bg.svg
-    alt: Banner
+  icon:
+    src: /prometheus.svg
+    alt: Prometheus logo
   actions:
     - theme: brand
+      text: Install
+      link: /installation
+    - theme: alt
       text: Get Started
       link: /usage
     - theme: alt

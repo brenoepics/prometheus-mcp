@@ -14,6 +14,17 @@
 
 ---
 
+<!-- Installation buttons -->
+
+## Install
+
+| Cursor | VS Code |
+|:------:|:-------:|
+| <a href="https://cursor.com/en/install-mcp?name=prometheus-mcp&config=%7B%22command%22%3A%22docker%22%2C%22args%22%3A%5B%22run%22%2C%22--rm%22%2C%22-i%22%2C%22brenoepics%2Fprometheus-mcp%3Alatest%22%2C%22--mcp%22%2C%22--prometheus-url%22%2C%22http%3A%2F%2Fhost.docker.internal%3A9090%22%5D%7D"><img alt="Install MCP Server" src="https://cursor.com/deeplink/mcp-install-light.svg"/></a> | <a href="https://insiders.vscode.dev/redirect/mcp/install?name=prometheus%20mcp%20server&config=%7B%22command%22%3A%22docker%22%2C%22args%22%3A%5B%22run%22%2C%22--rm%22%2C%22-i%22%2C%22brenoepics%2Fprometheus-mcp%3Alatest%22%2C%22--mcp%22%2C%22--prometheus-url%22%2C%22http%3A%2F%2Fhost.docker.internal%3A9090%22%5D%7D"><img alt="Install on VS Code" src="https://img.shields.io/badge/Install_on-VS_Code-FF9900?style=flat-square&logo=visualstudiocode&logoColor=white"/></a> |
+
+- On Linux, prefer `--network host` and `http://localhost:9090` in your config.
+- Full instructions (prebuilt binaries, Cargo, Docker, Claude Desktop) in the docs: https://brenoepics.github.io/prometheus-mcp/installation
+
 A minimal Model Context Protocol (MCP) server focused on reading from Prometheus. It exposes Prometheus discovery and query tools to MCP-compatible apps and includes a convenient CLI for local queries.
 
 Highlights

@@ -4,14 +4,16 @@ It’s recommended to use the Docker image when running the MCP server for Claud
 
 ::: tip Reference
 Follow the official instructions to locate/modify your Claude Desktop configuration:
+
 - https://modelcontextprotocol.io/quickstart/user#for-claude-desktop-users
-:::
+  :::
 
 Edit your `claude_desktop_config.json` to add an entry like one of the following.
 
 ## Option A: Run via Docker (recommended)
 
 No credentials required on Prometheus (local instance):
+
 ```json
 {
   "mcpServers": {
@@ -29,6 +31,7 @@ No credentials required on Prometheus (local instance):
 ```
 
 With host Prometheus and metrics exporter on port 9091 (macOS/Windows):
+
 ```json
 {
   "mcpServers": {
@@ -38,12 +41,15 @@ With host Prometheus and metrics exporter on port 9091 (macOS/Windows):
         "run",
         "--rm",
         "-i",
-        "-p", "9091:9091",
+        "-p",
+        "9091:9091",
         "prometheus-mcp:latest",
         "--mcp",
-        "--prometheus-url", "http://host.docker.internal:9090",
+        "--prometheus-url",
+        "http://host.docker.internal:9090",
         "--metrics-exporter",
-        "--metrics-port", "9091"
+        "--metrics-port",
+        "9091"
       ]
     }
   }
@@ -51,6 +57,7 @@ With host Prometheus and metrics exporter on port 9091 (macOS/Windows):
 ```
 
 With Basic Auth (provide env vars):
+
 ```json
 {
   "mcpServers": {
@@ -60,9 +67,12 @@ With Basic Auth (provide env vars):
         "run",
         "--rm",
         "-i",
-        "-e", "PROMETHEUS_URL=https://prom.example.com",
-        "-e", "PROMETHEUS_USERNAME=api",
-        "-e", "PROMETHEUS_PASSWORD=secret",
+        "-e",
+        "PROMETHEUS_URL=https://prom.example.com",
+        "-e",
+        "PROMETHEUS_USERNAME=api",
+        "-e",
+        "PROMETHEUS_PASSWORD=secret",
         "prometheus-mcp:latest",
         "--mcp"
       ]
@@ -72,6 +82,7 @@ With Basic Auth (provide env vars):
 ```
 
 Linux: to access the host Prometheus without publishing ports, add `--network host` (works only on Linux):
+
 ```json
 {
   "mcpServers": {
@@ -81,10 +92,12 @@ Linux: to access the host Prometheus without publishing ports, add `--network ho
         "run",
         "--rm",
         "-i",
-        "--network", "host",
+        "--network",
+        "host",
         "prometheus-mcp:latest",
         "--mcp",
-        "--prometheus-url", "http://localhost:9090"
+        "--prometheus-url",
+        "http://localhost:9090"
       ]
     }
   }
@@ -94,17 +107,23 @@ Linux: to access the host Prometheus without publishing ports, add `--network ho
 ## Option B: Run the local binary
 
 If you built or installed the binary locally:
+
 ```json
 {
   "mcpServers": {
     "prometheus": {
       "command": "prometheus-mcp",
-      "args": ["--mcp", "--prometheus-url", "http://localhost:9090"]
+      "args": [
+        "--mcp",
+        "--prometheus-url",
+        "http://localhost:9090"
+      ]
     }
   }
 }
 ```
 
 ::: warning Secrets
-Prefer environment variables (or a host secret manager) over placing credentials directly in `claude_desktop_config.json`.
+Prefer environment variables (or a host secret manager) over placing credentials directly in
+`claude_desktop_config.json`.
 :::

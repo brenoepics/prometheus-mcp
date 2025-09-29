@@ -9,6 +9,7 @@ npx @modelcontextprotocol/inspector
 ```
 
 Then open the URL it prints (e.g., http://localhost:5173) and connect:
+
 - Transport: STDIO
 - Command: `prometheus-mcp`
 - Args (optional): `--mcp --prometheus-url http://localhost:9090`
@@ -16,7 +17,8 @@ Then open the URL it prints (e.g., http://localhost:5173) and connect:
 Click Connect, then use the Tools tab to list and call the Prometheus tools.
 
 ::: tip
-If the inspector can’t connect, try running the binary directly in a separate terminal to confirm it starts without errors.
+If the inspector can’t connect, try running the binary directly in a separate terminal to confirm it starts without
+errors.
 :::
 
 ## Logs
@@ -30,7 +32,8 @@ tail -f /tmp/mcp.jsonl
 ## Common issues
 
 ::: warning
+
 - Connection refused: verify `--prometheus-url` and network reachability (Docker vs host networking).
 - 401/403 from Prometheus: configure Basic Auth via env or flags.
 - Time format: prefer RFC3339 (e.g., 2025-09-27T12:00:00Z) or Unix epoch seconds.
-:::
+  :::
